@@ -15,6 +15,33 @@ variable "private_subnet_cidr" {
   default = "10.0.2.0/24"
 }
 
+variable "jenkins_user_data" {
+  default = <<-EOF
+              #!/bin/bash
+              sudo yum install -y java
+              sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
+              sudo rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+              sudo yum install -y jenkins
+              sudo systemctl start jenkins
+              sudo systemctl enable jenkins
+
+              
+              sudo amazon-linux-extras install docker -y
+              sudo systemctl start docker
+              sudo systemctl enable docker
+
+              
+              sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+              sudo chmod +x kubectl
+              sudo mv kubectl /usr/local/bin/
+
+              
+              curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+              chmod +x get_helm.sh
+              ./get_helm.sh
+            EOF
+}
+
 module "vpc" {
   source = "../modules/vpc"
 
